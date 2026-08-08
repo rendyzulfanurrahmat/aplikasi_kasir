@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRC Rendy - POS & Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+
+    <!-- Header Navbar -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-red-900/30 px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-red-500 flex items-center justify-center shadow-lg shadow-red-600/30 text-white font-black text-lg">
+                <i class="fa-solid fa-store"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">SRC<span class="text-white"> RENDY</span></h1>
+                <p class="text-[10px] text-slate-400 font-medium">Mitra Toko Kelontong Anda</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="refreshApp()" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center space-x-2 shadow-sm active:scale-95 cursor-pointer" title="Refresh & Sinkronisasi Data">
+                <i class="fa-solid fa-rotate" id="refresh-icon"></i><span class="hidden sm:inline">Refresh</span>
+            </button>
+
+            <nav class="flex space-x-1.5 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800">
+                <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl text-xs tracking-wide transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('pos')" id="btn-tab-pos" class="px-4 py-2 bg-red-600 text-white font-extrabold rounded-xl text-xs tracking-wide transition-all shadow-md shadow-red-600/25 flex items-center space-x-2">
+                    <i class="fa-solid fa-cash-register"></i><span>Kasir</span>
+                </button>
+                <button onclick="switchTab('products')" id="btn-tab-products" class="px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl text-xs tracking-wide transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-boxes-stacked"></i><span>Katalog</span>
+                </button>
+                <button onclick="switchTab('history')" id="btn-tab-history" class="px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl text-xs tracking-wide transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+        
+        <!-- TAB 0: DASHBOARD -->
+        <div id="tab-dashboard" class="hidden space-y-6 animate-fadeIn">
+            <div class="flex justify-between items-center bg-slate-900/60 p-5 rounded-3xl border border-slate-800/80 backdrop-blur-md">
+                <div>
+                    <h2 class="text-lg font-black text-white">Dashboard SRC Rendy</h2>
+                    <p class="text-xs text-slate-400">Ringkasan performa penjualan dan inventaris toko</p>
+                </div>
+                <div class="text-right">
+                    <!-- Tanggal & Waktu Real-Time -->
+                    <span id="dash-date" class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3.5 py-2 rounded-xl font-mono font-bold inline-block"></span>
+                </div>
+            </div>
+
+            <!-- Kartu Statistik -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400">
+                        <span class="text-xs uppercase font-bold tracking-wider">Total Pendapatan</span>
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-rupiah-sign"></i></div>
+                    </div>
+                    <h3 id="stat-revenue" class="text-2xl font-black text-white font-mono">Rp 0</h3>
+                    <p class="text-[11px] text-slate-500">Akumulasi seluruh transaksi</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400">
+                        <span class="text-xs uppercase font-bold tracking-wider">Jumlah Transaksi</span>
+                        <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                    </div>
+                    <h3 id="stat-trx-count" class="text-2xl font-black text-white font-mono">0</h3>
+                    <p class="text-[11px] text-slate-500">Transaksi berhasil diproses</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400">
+                        <span class="text-xs uppercase font-bold tracking-wider">Total Produk Katalog</span>
+                        <div class="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center"><i class="fa-solid fa-box"></i></div>
+                    </div>
+                    <h3 id="stat-prod-count" class="text-2xl font-black text-white font-mono">0</h3>
+                    <p class="text-[11px] text-slate-500">Jenis barang terdaftar</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400">
+                        <span class="text-xs uppercase font-bold tracking-wider">Stok Menipis</span>
+                        <div class="w-8 h-8 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    </div>
+                    <h3 id="stat-low-stock" class="text-2xl font-black text-red-400 font-mono">0</h3>
+                    <p class="text-[11px] text-slate-500">Stok barang &le; 5 pcs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: KASIR (POS) -->
+        <div id="tab-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+            <div class="lg:col-span-2 space-y-4">
+                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="relative flex-1 w-full">
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="search-product" placeholder="Cari nama produk atau scan barcode..." oninput="filterProducts()" class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 transition-all shadow-inner">
+                    </div>
+                </div>
+                <div id="pos-product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[62vh] overflow-y-auto pr-1"></div>
+            </div>
+            
+            <div class="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-2xl">
+                <div>
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                        <h2 class="font-black text-sm uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-cart-shopping text-red-500"></i><span>Keranjang Belanja</span>
+                        </h2>
+                        <span id="cart-item-count" class="text-xs bg-slate-800 px-2.5 py-1 rounded-full text-slate-400 font-mono">0 item</span>
+                    </div>
+                    <div id="cart-list" class="space-y-3 max-h-[36vh] overflow-y-auto pr-1 text-sm">
+                        <div class="text-center py-12 text-slate-600 space-y-2">
+                            <i class="fa-solid fa-basket-shopping text-3xl"></i>
+                            <p class="text-xs">Keranjang masih kosong</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-slate-800 pt-4 space-y-4">
+                    <div class="flex justify-between items-center bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/50">
+                        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Pembayaran</span>
+                        <span id="cart-total" class="text-lg font-black text-red-400 font-mono">Rp 0</span>
+                    </div>
+                    <button onclick="openCheckoutModal()" class="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-black py-3.5 rounded-2xl transition-all shadow-lg shadow-red-600/25 active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-wallet"></i><span>Bayar Sekarang</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: KATALOG BARANG -->
+        <div id="tab-products" class="hidden space-y-4 animate-fadeIn">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800 backdrop-blur-md gap-3">
+                <div>
+                    <h2 class="text-base font-black text-white">Kelola Katalog Produk</h2>
+                    <p class="text-xs text-slate-400">Tambah, edit, dan hapus barang inventaris SRC Rendy</p>
+                </div>
+                <div>
+                    <button onclick="openAddProductModal()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-red-600/20 flex items-center space-x-2 active:scale-95 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i><span>Tambah Barang</span>
+                    </button>
+                </div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-800/40 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider font-bold">
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Barcode</th>
+                            <th class="p-4">Nama Produk</th>
+                            <th class="p-4">Kategori</th>
+                            <th class="p-4">Harga</th>
+                            <th class="p-4">Stok</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: RIWAYAT TRANSAKSI (Filter Tanggal & Waktu) -->
+        <div id="tab-history" class="hidden space-y-4 animate-fadeIn">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800 backdrop-blur-md gap-3">
+                <div>
+                    <h2 class="text-base font-black text-white">Riwayat Transaksi Toko</h2>
+                    <p class="text-xs text-slate-400">Saring riwayat berdasarkan tanggal dan jam spesifik</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                    <span class="text-xs text-slate-400 font-semibold">Tanggal:</span>
+                    <input type="date" id="filter-history-date" onchange="renderHistoryTable()" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-red-600">
+                    
+                    <span class="text-xs text-slate-400 font-semibold ml-2">Jam:</span>
+                    <input type="time" id="filter-history-time" onchange="renderHistoryTable()" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-red-600">
+                    
+                    <button onclick="resetHistoryFilter()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer" title="Reset Filter">Reset</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-800/40 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider font-bold">
+                            <th class="p-4">ID Transaksi</th>
+                            <th class="p-4">Tanggal & Waktu</th>
+                            <th class="p-4">Total</th>
+                            <th class="p-4">Tunai</th>
+                            <th class="p-4">Kembalian</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tambah Barang Baru -->
+    <div id="add-product-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5 relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-red-600/10 border border-red-600/20 flex items-center justify-center text-red-500">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-base text-white">Tambah Produk Baru</h3>
+                        <p class="text-[11px] text-slate-400">Masukkan detail produk ke katalog</p>
+                    </div>
+                </div>
+                <button onclick="closeAddProductModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="space-y-3.5 text-xs">
+                <div>
+                    <label class="text-slate-400 font-semibold block mb-1.5">ID Produk (Unik)</label>
+                    <input type="text" id="new-p-id" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Barcode</label>
+                        <input type="text" id="new-p-barcode" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Kategori</label>
+                        <input type="text" id="new-p-category" placeholder="Sembako" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-slate-400 font-semibold block mb-1.5">Nama Produk</label>
+                    <input type="text" id="new-p-name" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Harga (Rp)</label>
+                        <input type="number" id="new-p-price" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Stok</label>
+                        <input type="number" id="new-p-stock" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="saveNewProduct()" class="w-1/2 bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-2xl transition shadow-lg shadow-red-600/25 text-xs uppercase tracking-wider cursor-pointer">Simpan</button>
+                <button onclick="closeAddProductModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl transition text-xs uppercase tracking-wider cursor-pointer">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Barang -->
+    <div id="edit-product-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5 relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-red-600/10 border border-red-600/20 flex items-center justify-center text-red-500">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-base text-white">Edit Produk</h3>
+                        <p class="text-[11px] text-slate-400">Perbarui informasi produk katalog</p>
+                    </div>
+                </div>
+                <button onclick="closeEditProductModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 transition flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="space-y-3.5 text-xs">
+                <div>
+                    <label class="text-slate-400 font-semibold block mb-1.5">ID Produk</label>
+                    <input type="text" id="edit-p-id" disabled class="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-4 py-3 text-slate-500 font-mono cursor-not-allowed">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Barcode</label>
+                        <input type="text" id="edit-p-barcode" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Kategori</label>
+                        <input type="text" id="edit-p-category" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-slate-400 font-semibold block mb-1.5">Nama Produk</label>
+                    <input type="text" id="edit-p-name" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Harga (Rp)</label>
+                        <input type="number" id="edit-p-price" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="text-slate-400 font-semibold block mb-1.5">Stok</label>
+                        <input type="number" id="edit-p-stock" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-100 font-mono">
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="updateProduct()" class="w-1/2 bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-2xl transition shadow-lg shadow-red-600/25 text-xs uppercase tracking-wider cursor-pointer">Perbarui</button>
+                <button onclick="closeEditProductModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl transition text-xs uppercase tracking-wider cursor-pointer">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Checkout / Pembayaran Tunai -->
+    <div id="checkout-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-5 relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-red-600/10 border border-red-600/20 flex items-center justify-center text-red-500">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-base text-white">Pembayaran Tunai</h3>
+                        <p class="text-[11px] text-slate-400">Selesaikan transaksi kasir</p>
+                    </div>
+                </div>
+                <button onclick="closeCheckoutModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 transition flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div>
+                <label class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Jumlah Uang Tunai (Rp)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center font-bold text-slate-500 text-sm">Rp</span>
+                    <input type="number" id="cash-input" oninput="calculateChange()" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-4 py-3.5 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/20 font-mono font-black text-red-400">
+                </div>
+            </div>
+            <div class="space-y-2.5 bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs">
+                <div class="flex justify-between text-slate-400"><span>Total Belanja:</span> <span id="modal-total" class="font-bold text-white font-mono">Rp 0</span></div>
+                <div class="flex justify-between text-slate-400 pt-2 border-t border-slate-800"><span>Kembalian:</span> <span id="modal-change" class="font-black text-red-400 text-sm font-mono">Rp 0</span></div>
+            </div>
+            <div class="flex space-x-3 pt-1">
+                <button onclick="processPayment()" class="w-1/2 bg-red-600 hover:bg-red-500 text-white font-black py-3.5 rounded-2xl transition shadow-lg shadow-red-600/25 text-xs tracking-wider uppercase cursor-pointer">Konfirmasi</button>
+                <button onclick="closeCheckoutModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 rounded-2xl transition text-xs tracking-wider uppercase cursor-pointer">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Struk -->
+    <div id="receipt-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4 text-center relative">
+            <div class="inline-flex items-center space-x-2 bg-red-600/10 text-red-400 border border-red-600/20 px-3.5 py-1.5 rounded-full text-xs font-black">
+                <i class="fa-solid fa-circle-check"></i><span>Transaksi Berhasil</span>
+            </div>
+            <div id="receipt-print-area">
+                <div id="receipt-details" class="bg-white text-slate-900 p-5 rounded-2xl font-mono text-[11px] text-left border border-slate-200 shadow-inner leading-relaxed max-h-60 overflow-y-auto"></div>
+            </div>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="window.print()" class="w-1/2 bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-2xl transition text-xs tracking-wider uppercase flex items-center justify-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-print"></i><span>Cetak</span>
+                </button>
+                <button onclick="closeReceiptModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl transition text-xs tracking-wider uppercase cursor-pointer">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
